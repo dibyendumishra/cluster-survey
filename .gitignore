@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+*.env
+config.local.py
+
+# Data (real cluster files stay local, only sample goes to git)
+data/*.geojson
+data/*.shp
+data/*.dbf
+data/*.prj
+data/*.shx
+!data/sample/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

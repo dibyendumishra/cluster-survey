@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cluster Survey</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+  #topbar { background: #1a1a2e; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2d2d4e; flex-shrink: 0; z-index: 1000; }
+  #topbar h1 { font-size: 15px; font-weight: 600; color: #e0e0ff; }
+  #topbar .meta { font-size: 11px; color: #888; margin-top: 2px; }
+  #map-toggle { background: #2d2d4e; border: 1px solid #444; color: #ccc; font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+
+  #map { flex: 1; width: 100%; position: relative; }
+
+  #algobar { background: #12122a; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; flex-shrink: 0; border-bottom: 1px solid #2d2d4e; scrollbar-width: none; }
+  #algobar::-webkit-scrollbar { display: none; }
+  .algo-chip { background: #2d2d4e; border: 1px solid #444; color: #aaa; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 99px; cursor: pointer; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.3px; transition: all 0.15s; }
+  .algo-chip.active { background: #3730a3; color: #c7d2fe; border-color: #818cf870; }
+  #algo-empty { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; color: #555; font-size: 13px; pointer-events: none; z-index: 500; }
+  #algo-empty.visible { display: block; }
+
+  #statsbar { background: #1a1a2e; display: flex; border-top: 1px solid #2d2d4e; border-bottom: 1px solid #2d2d4e; flex-shrink: 0; }
+  .stat-item { flex: 1; text-align: center; padding: 7px 4px; border-right: 1px solid #2d2d4e; font-size: 10px; color: #888; }
+  .stat-item:last-child { border-right: none; }
+  .stat-item strong { display: block; font-size: 16px; font-weight: 700; }
+  .stat-pending strong { color: #f59e0b; }
+  .stat-confirmed strong { color: #34d399; }
+  .stat-flagged strong { color: #f87171; }
+  .stat-total strong { color: #818cf8; }
+
+  /* Loading overlay */
+  #loading {
+    position: absolute; inset: 0; background: #111;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; gap: 12px;
+  }
+  #loading.hidden { display: none; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #2d2d4e; border-top-color: #818cf8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 13px; color: #888; }
+  #loading .error { color: #f87171; font-size: 13px; text-align: center; max-width: 280px; line-height: 1.5; }
+
+  #sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; border-radius: 16px 16px 0 0; border-top: 1px solid #2d2d4e; transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); z-index: 2000; max-height: 85dvh; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
+  #sheet.open { transform: translateY(0); }
+  .sheet-handle { width: 40px; height: 4px; background: #444; border-radius: 2px; margin: 10px auto 0; }
+  #sheet-content { padding: 14px 16px 20px; }
+
+  .cluster-id { font-size: 12px; color: #818cf8; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .cluster-name { font-size: 18px; font-weight: 700; color: #e0e0ff; margin: 4px 0 2px; }
+  .cluster-meta { font-size: 12px; color: #888; margin-bottom: 12px; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .info-card { background: #12122a; border-radius: 8px; padding: 10px 12px; border: 1px solid #2d2d4e; }
+  .info-card .label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-card .value { font-size: 15px; font-weight: 600; color: #e0e0ff; margin-top: 2px; }
+
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 99px; margin-bottom: 14px; }
+  .badge-pending { background: #2a1f00; color: #f59e0b; border: 1px solid #78450020; }
+  .badge-confirmed { background: #00261a; color: #34d399; border: 1px solid #10523020; }
+  .badge-flagged { background: #260000; color: #f87171; border: 1px solid #52101020; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .section-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+
+  .btn { padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn:active { opacity: 0.75; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-confirm { background: #065f46; color: #6ee7b7; border: 1px solid #34d39940; }
+  .btn-flag { background: #450a0a; color: #fca5a5; border: 1px solid #f8717140; }
+  .btn-close { width: 100%; padding: 11px; background: #2d2d4e; color: #aaa; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; margin-top: 6px; }
+
+  #flag-reasons { display: none; margin-bottom: 10px; }
+  #flag-reasons.visible { display: block; }
+  .reason-label { font-size: 11px; color: #f87171; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .reason-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: #2d2d4e; border: 1px solid #444; color: #ccc; font-size: 12px; padding: 5px 11px; border-radius: 99px; cursor: pointer; transition: all 0.15s; }
+  .chip.selected { background: #450a0a; color: #fca5a5; border-color: #f8717170; }
+  .btn-submit-flag { width: 100%; margin-top: 10px; padding: 12px; background: #7f1d1d; color: #fca5a5; border: 1px solid #f8717140; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-submit-flag:disabled { opacity: 0.4; cursor: default; }
+
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1e293b; color: #e2e8f0; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 500; border: 1px solid #334155; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 3000; white-space: nowrap; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; }
+  #overlay.visible { display: block; }
+
+  .leaflet-popup-content-wrapper { background: #1a1a2e; color: #e0e0ff; border: 1px solid #2d2d4e; border-radius: 10px; font-family: inherit; }
+  .leaflet-popup-tip { background: #1a1a2e; }
+  .leaflet-popup-close-button { color: #888 !important; }
+</style>
+</head>
+<body>
+
+<!-- ── CONFIGURE THESE TWO LINES ─────────────────────────────────────────── -->
+<script>
+  const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+  const SUPABASE_KEY = "YOUR_ANON_KEY";
+  // Optional: identify surveyors. Replace with a login flow later.
+  const SURVEYOR_ID  = prompt("Enter your name or ID:") || "anonymous";
+</script>
+<!-- ─────────────────────────────────────────────────────────────────────── -->
+
+<div id="topbar">
+  <div>
+    <h1>Cluster Survey</h1>
+    <div class="meta" id="surveyor-label">Loading...</div>
+  </div>
+  <button id="map-toggle" onclick="toggleTiles()">Satellite</button>
+</div>
+
+<div id="statsbar">
+  <div class="stat-item stat-total"><strong id="s-total">-</strong>Total</div>
+  <div class="stat-item stat-pending"><strong id="s-pending">-</strong>Pending</div>
+  <div class="stat-item stat-confirmed"><strong id="s-confirmed">-</strong>Confirmed</div>
+  <div class="stat-item stat-flagged"><strong id="s-flagged">-</strong>Flagged</div>
+</div>
+
+<div id="algobar">
+  <span class="algo-chip active" data-algo="all" onclick="filterAlgo('all', this)">All algorithms</span>
+</div>
+
+<div id="map">
+  <div id="algo-empty">No clusters for this algorithm yet.<br>Run scripts/run_all.py first.</div>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p id="loading-msg">Fetching clusters from Supabase...</p>
+  </div>
+</div>
+
+<div id="overlay" onclick="closeSheet()"></div>
+
+<div id="sheet">
+  <div class="sheet-handle"></div>
+  <div id="sheet-content">
+    <div class="cluster-id" id="sh-id"></div>
+    <div class="cluster-name" id="sh-name"></div>
+    <div class="cluster-meta" id="sh-meta"></div>
+    <div id="sh-badge"></div>
+
+    <div class="info-grid">
+      <div class="info-card"><div class="label">Est. Households</div><div class="value" id="sh-hh">-</div></div>
+      <div class="info-card"><div class="label">Priority Score</div><div class="value" id="sh-score">-</div></div>
+      <div class="info-card"><div class="label">Area (ha)</div><div class="value" id="sh-area">-</div></div>
+      <div class="info-card"><div class="label">Algorithm</div><div class="value" id="sh-algo">-</div></div>
+    </div>
+
+    <div class="section-label">Action</div>
+    <div class="action-row">
+      <button class="btn btn-confirm" id="btn-confirm" onclick="confirmCluster()">&#10003; Confirm</button>
+      <button class="btn btn-flag"    id="btn-flag"    onclick="showFlagReasons()">&#9873; Flag Issue</button>
+    </div>
+
+    <div id="flag-reasons">
+      <div class="reason-label">Select reason(s)</div>
+      <div class="reason-chips">
+        <span class="chip" onclick="toggleChip(this)">Not a habitation</span>
+        <span class="chip" onclick="toggleChip(this)">Low population</span>
+        <span class="chip" onclick="toggleChip(this)">Already covered</span>
+        <span class="chip" onclick="toggleChip(this)">Urban area</span>
+        <span class="chip" onclick="toggleChip(this)">Wrong boundary</span>
+        <span class="chip" onclick="toggleChip(this)">Inaccessible</span>
+        <span class="chip" onclick="toggleChip(this)">Other</span>
+      </div>
+      <button class="btn-submit-flag" id="submit-flag-btn" onclick="submitFlag()" disabled>Submit Flag</button>
+    </div>
+
+    <button class="btn-close" onclick="closeSheet()">Close</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── Demo mode: add ?demo=true to URL to run fully offline ────────────────────
+const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "true";
+if (DEMO_MODE) {
+  document.title = "Cluster Survey [DEMO]";
+}
+
+// ── Supabase REST helpers ─────────────────────────────────────────────────────
+const SB_HEADERS = {
+  "apikey":        SUPABASE_KEY,
+  "Authorization": "Bearer " + SUPABASE_KEY,
+  "Content-Type":  "application/json",
+  "Prefer":        "return=minimal"
+};
+
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    headers: SB_HEADERS,
+    ...opts
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase error ${res.status}: ${err}`);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function fetchClusters() {
+  if (DEMO_MODE) {
+    // Load from local sample file — no Supabase needed
+    const res = await fetch("../data/sample/clusters_pmgsy.geojson");
+    const fc  = await res.json();
+    return fc.features.map(f => ({
+      ...f.properties,
+      geometry: f.geometry
+    })).sort((a, b) => (b.priority_score || 0) - (a.priority_score || 0));
+  }
+  return sbFetch("clusters?select=*&order=priority_score.desc");
+}
+
+async function updateClusterStatus(id, status, flaggedReason) {
+  if (DEMO_MODE) {
+    // In demo mode just update in-memory, no persistence
+    return null;
+  }
+  const body = { status };
+  if (flaggedReason !== undefined) body.flagged_reason = flaggedReason;
+  return sbFetch(`clusters?id=eq.${encodeURIComponent(id)}`, {
+    method:  "PATCH",
+    body:    JSON.stringify(body),
+    headers: { ...SB_HEADERS, "Prefer": "return=minimal" }
+  });
+}
+
+async function insertResponse(clusterId, action, reason) {
+  if (DEMO_MODE) return null;
+  return sbFetch("responses", {
+    method: "POST",
+    body:   JSON.stringify({
+      cluster_id:   clusterId,
+      action,
+      reason:       reason || null,
+      surveyor_id:  SURVEYOR_ID,
+    })
+  });
+}
+
+// ── Map init ──────────────────────────────────────────────────────────────────
+document.getElementById("surveyor-label").textContent =
+  (DEMO_MODE ? "[DEMO] " : "") + "Surveyor: " + SURVEYOR_ID;
+if (DEMO_MODE) document.getElementById("loading-msg").textContent = "Loading sample data...";
+
+const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "&copy; OpenStreetMap contributors", maxZoom: 19
+});
+const satLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+  attribution: "&copy; Esri World Imagery", maxZoom: 19
+});
+
+const map = L.map("map", { layers: [osmLayer], zoomControl: false });
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+let usingSat = false;
+function toggleTiles() {
+  usingSat = !usingSat;
+  if (usingSat) { map.removeLayer(osmLayer); map.addLayer(satLayer); document.getElementById("map-toggle").textContent = "Street"; }
+  else          { map.removeLayer(satLayer); map.addLayer(osmLayer); document.getElementById("map-toggle").textContent = "Satellite"; }
+}
+
+// ── Cluster state & rendering ─────────────────────────────────────────────────
+const STATUS_COLORS = {
+  pending:   { fill: "#f59e0b", stroke: "#d97706", fillOpacity: 0.25 },
+  confirmed: { fill: "#34d399", stroke: "#10b981", fillOpacity: 0.25 },
+  flagged:   { fill: "#f87171", stroke: "#ef4444", fillOpacity: 0.25 }
+};
+function styleFor(status) {
+  const c = STATUS_COLORS[status] || STATUS_COLORS.pending;
+  return { color: c.stroke, fillColor: c.fill, fillOpacity: c.fillOpacity, weight: 2 };
+}
+
+const clusters   = {};   // id → row object (mutable)
+const layerMap   = {};   // id → Leaflet layer
+let   activeId   = null;
+let   activeAlgo = "all";
+
+// ── Algorithm filter bar ──────────────────────────────────────────────────────
+function buildAlgoBar(rows) {
+  const algos = [...new Set(rows.map(r => r.algorithm).filter(Boolean))].sort();
+  const bar = document.getElementById("algobar");
+  algos.forEach(algo => {
+    const chip = document.createElement("span");
+    chip.className = "algo-chip";
+    chip.dataset.algo = algo;
+    chip.textContent = algo.toUpperCase();
+    chip.onclick = () => filterAlgo(algo, chip);
+    bar.appendChild(chip);
+  });
+}
+
+function filterAlgo(algo, el) {
+  activeAlgo = algo;
+  document.querySelectorAll(".algo-chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+
+  let visible = 0;
+  Object.values(clusters).forEach(row => {
+    const layer = layerMap[row.id];
+    if (!layer) return;
+    const show = algo === "all" || row.algorithm === algo;
+    if (show) { layer.addTo(map); visible++; }
+    else       { map.removeLayer(layer); }
+  });
+
+  document.getElementById("algo-empty").classList.toggle("visible", visible === 0);
+  updateStats();
+}
+
+function renderCluster(row) {
+  const id = row.id;
+  if (layerMap[id]) map.removeLayer(layerMap[id]);
+
+  const geojsonFeature = { type: "Feature", properties: row, geometry: row.geometry };
+  const layer = L.geoJSON(geojsonFeature, { style: styleFor(row.status) }).addTo(map);
+  layer.on("click", () => openSheet(id));
+  layerMap[id] = layer;
+}
+
+function updateStats() {
+  const visible = Object.values(clusters).filter(r =>
+    activeAlgo === "all" || r.algorithm === activeAlgo
+  );
+  const c = { total: visible.length, pending: 0, confirmed: 0, flagged: 0 };
+  visible.forEach(r => c[r.status]++);
+  document.getElementById("s-total").textContent     = c.total;
+  document.getElementById("s-pending").textContent   = c.pending;
+  document.getElementById("s-confirmed").textContent = c.confirmed;
+  document.getElementById("s-flagged").textContent   = c.flagged;
+}
+
+async function loadClusters() {
+  try {
+    const rows = await fetchClusters();
+    if (!rows || rows.length === 0) {
+      showLoadError("No clusters found in Supabase.\nRun algorithms/run_all.py first.");
+      return;
+    }
+    buildAlgoBar(rows);
+    rows.forEach(row => {
+      clusters[row.id] = row;
+      renderCluster(row);
+    });
+    const allLayers = Object.values(layerMap);
+    if (allLayers.length > 0) {
+      const group = L.featureGroup(allLayers);
+      map.fitBounds(group.getBounds(), { padding: [30, 30] });
+    }
+    updateStats();
+    document.getElementById("loading").classList.add("hidden");
+  } catch (err) {
+    showLoadError("Could not connect to Supabase.\n\nCheck SUPABASE_URL and SUPABASE_KEY\nat the top of this file.\n\n" + err.message);
+  }
+}
+
+function showLoadError(msg) {
+  const el = document.getElementById("loading");
+  el.innerHTML = `<div class="error">${msg.replace(/\n/g, "<br>")}</div>`;
+}
+
+// ── Bottom sheet ──────────────────────────────────────────────────────────────
+function openSheet(id) {
+  activeId = id;
+  const p  = clusters[id];
+
+  document.getElementById("sh-id").textContent    = p.id;
+  document.getElementById("sh-name").textContent  = p.name || "-";
+  document.getElementById("sh-meta").textContent  = [p.block, p.district, p.state].filter(Boolean).join(" / ");
+  document.getElementById("sh-hh").textContent    = p.households ?? "-";
+  document.getElementById("sh-score").textContent = p.priority_score != null ? (p.priority_score * 100).toFixed(0) + "%" : "-";
+  document.getElementById("sh-area").textContent  = p.area_ha ?? "-";
+  document.getElementById("sh-algo").textContent  = p.algorithm ? p.algorithm.toUpperCase() : "-";
+
+  const badgeClass = { pending: "badge-pending", confirmed: "badge-confirmed", flagged: "badge-flagged" };
+  const badgeLabel = { pending: "Pending review", confirmed: "Confirmed", flagged: "Flagged" };
+  document.getElementById("sh-badge").innerHTML =
+    `<span class="status-badge ${badgeClass[p.status] || "badge-pending"}">
+       <span class="badge-dot"></span>
+       ${badgeLabel[p.status] || "Pending"}${p.flagged_reason ? " &middot; " + p.flagged_reason : ""}
+     </span>`;
+
+  document.getElementById("flag-reasons").classList.remove("visible");
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+  document.getElementById("submit-flag-btn").disabled = true;
+  document.getElementById("btn-confirm").disabled = false;
+  document.getElementById("btn-flag").disabled    = false;
+
+  document.getElementById("sheet").classList.add("open");
+  document.getElementById("overlay").classList.add("visible");
+}
+
+function closeSheet() {
+  document.getElementById("sheet").classList.remove("open");
+  document.getElementById("overlay").classList.remove("visible");
+  activeId = null;
+}
+
+// ── Actions (write to Supabase) ───────────────────────────────────────────────
+async function confirmCluster() {
+  if (!activeId) return;
+  document.getElementById("btn-confirm").disabled = true;
+  document.getElementById("btn-flag").disabled    = true;
+
+  try {
+    await Promise.all([
+      updateClusterStatus(activeId, "confirmed", null),
+      insertResponse(activeId, "confirmed", null)
+    ]);
+    clusters[activeId].status         = "confirmed";
+    clusters[activeId].flagged_reason = null;
+    renderCluster(clusters[activeId]);
+    updateStats();
+    closeSheet();
+    showToast("Cluster confirmed");
+  } catch (err) {
+    showToast("Error: " + err.message);
+    document.getElementById("btn-confirm").disabled = false;
+    document.getElementById("btn-flag").disabled    = false;
+  }
+}
+
+function showFlagReasons() {
+  document.getElementById("flag-reasons").classList.add("visible");
+}
+
+function toggleChip(el) {
+  el.classList.toggle("selected");
+  document.getElementById("submit-flag-btn").disabled =
+    document.querySelectorAll(".chip.selected").length === 0;
+}
+
+async function submitFlag() {
+  if (!activeId) return;
+  const reasons = [...document.querySelectorAll(".chip.selected")].map(c => c.textContent).join(", ");
+  document.getElementById("submit-flag-btn").disabled = true;
+
+  try {
+    await Promise.all([
+      updateClusterStatus(activeId, "flagged", reasons),
+      insertResponse(activeId, "flagged", reasons)
+    ]);
+    clusters[activeId].status         = "flagged";
+    clusters[activeId].flagged_reason = reasons;
+    renderCluster(clusters[activeId]);
+    updateStats();
+    closeSheet();
+    showToast("Flagged: " + reasons);
+  } catch (err) {
+    showToast("Error: " + err.message);
+    document.getElementById("submit-flag-btn").disabled = false;
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadClusters();
+</script>
+</body>
+</html>

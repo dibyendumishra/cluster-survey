@@ -1,0 +1,329 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080001",
+        "HAB_NAME": "Longmisa",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180803,
+        "BLOCK_NAME": "Umrangso",
+        "POPULATION": 312,
+        "HOUSEHOLDS": 59,
+        "ROAD_CONN": false,
+        "PROG_COVRD": false,
+        "confidence": 0.861,
+        "lat": 25.117719,
+        "lon": 92.614093
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.614093,
+          25.117719
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080002",
+        "HAB_NAME": "Umrangso Basti",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180803,
+        "BLOCK_NAME": "Umrangso",
+        "POPULATION": 187,
+        "HOUSEHOLDS": 38,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.307,
+        "lat": 25.081648,
+        "lon": 92.730403
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.730403,
+          25.081648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080003",
+        "HAB_NAME": "Khonoma Tola",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180801,
+        "BLOCK_NAME": "Haflong",
+        "POPULATION": 243,
+        "HOUSEHOLDS": 48,
+        "ROAD_CONN": false,
+        "PROG_COVRD": false,
+        "confidence": 0.673,
+        "lat": 25.213995,
+        "lon": 92.682903
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.682903,
+          25.213995
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080004",
+        "HAB_NAME": "Rengpang",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180802,
+        "BLOCK_NAME": "Maibang",
+        "POPULATION": 156,
+        "HOUSEHOLDS": 30,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.326,
+        "lat": 25.183018,
+        "lon": 92.832238
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.832238,
+          25.183018
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080005",
+        "HAB_NAME": "Haflong Fringe",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180801,
+        "BLOCK_NAME": "Haflong",
+        "POPULATION": 421,
+        "HOUSEHOLDS": 87,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.633,
+        "lat": 25.333768,
+        "lon": 92.791143
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.791143,
+          25.333768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080006",
+        "HAB_NAME": "Maibang Hamlet",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180802,
+        "BLOCK_NAME": "Maibang",
+        "POPULATION": 134,
+        "HOUSEHOLDS": 23,
+        "ROAD_CONN": false,
+        "PROG_COVRD": false,
+        "confidence": 0.568,
+        "lat": 25.270987,
+        "lon": 92.912269
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.912269,
+          25.270987
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080007",
+        "HAB_NAME": "Jiribam Road",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180802,
+        "BLOCK_NAME": "Maibang",
+        "POPULATION": 89,
+        "HOUSEHOLDS": 18,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.159,
+        "lat": 25.41333,
+        "lon": 92.952792
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.952792,
+          25.41333
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080008",
+        "HAB_NAME": "Borlangfer",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180804,
+        "BLOCK_NAME": "Langting",
+        "POPULATION": 201,
+        "HOUSEHOLDS": 42,
+        "ROAD_CONN": false,
+        "PROG_COVRD": false,
+        "confidence": 0.69,
+        "lat": 25.442144,
+        "lon": 92.621892
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.621892,
+          25.442144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080009",
+        "HAB_NAME": "Langting Tola",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180804,
+        "BLOCK_NAME": "Langting",
+        "POPULATION": 167,
+        "HOUSEHOLDS": 32,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.401,
+        "lat": 25.391116,
+        "lon": 92.758126
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.758126,
+          25.391116
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080010",
+        "HAB_NAME": "Nambornodi",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180804,
+        "BLOCK_NAME": "Langting",
+        "POPULATION": 95,
+        "HOUSEHOLDS": 22,
+        "ROAD_CONN": false,
+        "PROG_COVRD": false,
+        "confidence": 0.564,
+        "lat": 25.45178,
+        "lon": 92.868843
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.868843,
+          25.45178
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080011",
+        "HAB_NAME": "Diyungmukh",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180801,
+        "BLOCK_NAME": "Haflong",
+        "POPULATION": 278,
+        "HOUSEHOLDS": 54,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.37,
+        "lat": 25.301969,
+        "lon": 92.701346
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.701346,
+          25.301969
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "HAB_ID": "18080012",
+        "HAB_NAME": "Silonijan",
+        "STATE_ID": 18,
+        "STATE_NAME": "Assam",
+        "DISTRICT_I": 1808,
+        "DISTRICT_N": "Dima Hasao",
+        "BLOCK_ID": 180802,
+        "BLOCK_NAME": "Maibang",
+        "POPULATION": 143,
+        "HOUSEHOLDS": 26,
+        "ROAD_CONN": true,
+        "PROG_COVRD": true,
+        "confidence": 0.273,
+        "lat": 25.321201,
+        "lon": 92.843199
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          92.843199,
+          25.321201
+        ]
+      }
+    }
+  ]
+}
