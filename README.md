@@ -4,6 +4,8 @@ A lightweight field-survey tool for ground-truthing AI-detected household cluste
 
 **The workflow:** Your spatial algorithm outputs GeoJSON cluster polygons → you upload them to a Supabase database → field surveyors open the map on their phones and confirm or flag each cluster.
 
+**NOTE** This is a vibe coded basic prototype built atop an earlier version. 
+
 ---
 
 ## Quick start
